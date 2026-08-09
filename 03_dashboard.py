@@ -62,8 +62,11 @@ GREEN   = "#3ecfaa"
 MUTED   = "#8b8fa8"
 TEXT    = "#e8eaf0"
 
-# Fixed mapping from best to lowest journal quartile
+# Fixed mapping from best to lowest journal quartile. SCImago writes "-" for journals it
+# ranks without assigning a quartile, which is relabelled for display only.
 QUARTILE_COLORS = {"Q1": GREEN, "Q2": BLUE, "Q3": ORANGE, "Q4": "#e8534f"}
+QUARTILE_ORDER  = ["Q1", "Q2", "Q3", "Q4"]
+NO_QUARTILE_LABEL = "No quartile"
 
 # Used for categories with no colour configured in the YAML, and for charts whose
 # categories are not named entities (for example "1 Site", "2 Sites")
@@ -448,12 +451,12 @@ def fig_sjr_quartile(df: pd.DataFrame) -> go.Figure:
     if not has_sjr(df) or "sjr_quartile" not in df.columns:
         return empty_figure("Publications by SJR Quartile", "No SJR data available")
 
-    order   = ["Q1", "Q2", "Q3", "Q4"]
     counts  = df["sjr_quartile"].value_counts()
-    unknown = [q for q in counts.index if q not in order]
-    labels  = [l for l in order + unknown if l in counts.index]
-    values  = counts.reindex(labels).values
-    colors  = [QUARTILE_COLORS.get(q, MUTED) for q in labels]
+    unknown = [q for q in counts.index if q not in QUARTILE_ORDER]
+    keys    = [k for k in QUARTILE_ORDER + unknown if k in counts.index]
+    values  = counts.reindex(keys).values
+    colors  = [QUARTILE_COLORS.get(q, MUTED) for q in keys]
+    labels  = [q if q in QUARTILE_COLORS else NO_QUARTILE_LABEL for q in keys]
 
     fig = go.Figure(go.Pie(
         labels=labels,
@@ -488,19 +491,19 @@ def fig_sjr_quartile_per_year(df: pd.DataFrame) -> go.Figure:
         return empty_figure("SJR Quartile per Year", "No SJR data available")
 
     d = year_as_category(d)
-    order    = ["Q1", "Q2", "Q3", "Q4"]
-    present  = [q for q in order if q in d["sjr_quartile"].values]
-    present += [q for q in d["sjr_quartile"].unique() if q not in order]
+    present  = [q for q in QUARTILE_ORDER if q in d["sjr_quartile"].values]
+    present += [q for q in d["sjr_quartile"].unique() if q not in QUARTILE_ORDER]
 
     fig = go.Figure()
     for q in present:
-        sub = d[d["sjr_quartile"] == q]
+        sub   = d[d["sjr_quartile"] == q]
+        label = q if q in QUARTILE_COLORS else NO_QUARTILE_LABEL
         fig.add_bar(
             x=sub["publication_year"], y=sub["n"],
-            name=q,
+            name=label,
             marker_color=QUARTILE_COLORS.get(q, MUTED),
             marker_line_width=0,
-            hovertemplate=f"<b>{q}</b><br>%{{x}}<br>Publications: %{{y:,}}<extra></extra>",
+            hovertemplate=f"<b>{label}</b><br>%{{x}}<br>Publications: %{{y:,}}<extra></extra>",
         )
     fig.update_layout(**plot_layout(
         title="SJR Quartile per Year",
@@ -918,7 +921,7 @@ with tab_journal:
         st.plotly_chart(fig_sjr_quartile(df_filtered), width="stretch")
     with col2:
         st.plotly_chart(fig_sjr_quartile_per_year(df_filtered), width="stretch")
-    data_note("Only publications with an SJR quartile assigned by SCImago are included.")
+    data_note("Publications whose journal could not be matched by ISSN are not shown.")
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
     st.plotly_chart(fig_sjr_per_year(df_filtered), width="stretch")
