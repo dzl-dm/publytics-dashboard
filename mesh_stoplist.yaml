@@ -1,0 +1,59 @@
+# MeSH Term Stoplist
+# Terms listed here are hidden by default in the MeSH Terms tab of the dashboard.
+# The filter can be toggled off via checkbox to see all terms.
+#
+# Categories:
+#   demographic    
+#   study_design
+#   generic_medical
+
+demographic:
+  - Humans
+  - Male
+  - Female
+  - Adult
+  - Middle Aged
+  - Aged
+  - Aged, 80 and over
+  - Young Adult
+  - Adolescent
+  - Child
+  - Child, Preschool
+  - Infant
+  - Infant, Newborn
+  - Animals
+  - Mice
+  - Mice, Inbred C57BL
+  - Mice, Knockout
+  - Rats
+  - Rats, Wistar
+  - Rats, Sprague-Dawley
+  - Germany
+
+study_design:
+  - Retrospective Studies
+  - Prospective Studies
+  - Cohort Studies
+  - Cross-Sectional Studies
+  - Case-Control Studies
+  - Follow-Up Studies
+  - Randomized Controlled Trials as Topic
+  - Reproducibility of Results
+  - Time Factors
+  - Risk Factors
+  - Risk Assessment
+  - Treatment Outcome
+  - Disease Progression
+
+generic_medical:
+  - Prognosis
+  - Biomarkers
+  - Phenotype
+  - Mutation
+  - Signal Transduction
+  - Disease Models, Animal
+  - Cell Line, Tumor
+  - Cells, Cultured
+  - Inflammation
+  - Genetic Predisposition to Disease
+  - Quality of Life

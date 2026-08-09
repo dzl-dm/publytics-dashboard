@@ -1,0 +1,125 @@
+# DZG Search Terms for PubMed Affiliation Search
+# Structure: DZG -> Network/Location -> List of Search Terms
+# 'general' = parent search for the entire DZG
+#
+# active_dzg: set to the DZG key you want to extract, prepare and display.
+# Only this DZG's data will be downloaded, processed and shown in the dashboard.
+
+active_dzg: DZL
+
+# Colours used across the dashboard.
+# dzg   : one colour per DZG, used for the co-affiliation chart.
+# sites : one colour per site, grouped by the DZG the site belongs to.
+# Any DZG or site left out here falls back to a built-in palette, assigned in
+# alphabetical order so the same name always keeps the same colour.
+colors:
+  dzg:
+    DZL:  "#5dade2"   # light blue
+    DZIF: "#3ecfaa"   # turquoise
+    DZNE: "#f5a623"   # orange
+    DZPG: "#9b7cf5"   # purple
+    DZKJ: "#2c5aa0"   # dark blue
+    DZHK: "#e8534f"   # red
+    DKTK: "#8fcc3a"   # green
+    DZD:  "#f0c040"   # yellow
+  sites:
+    DZL:
+      BREATH: "#f5a623"   # orange
+      ARCN:   "#8fcc3a"   # green
+      UGMLC:  "#9b7cf5"   # purple
+      TLRC:   "#4f8ef7"   # blue
+      CPC-M:  "#3ecfaa"   # turquoise
+
+
+DZIF:
+  general:
+    - "German Center for Infection Research"
+    - "German Center of Infection Research"
+    - "German Centre for Infection Research"
+    - "German Centre of Infection Research"
+    - "Deutsches Zentrum für Infektionsforschung"
+    - "DZIF"
+
+DZNE:
+  general:
+    - "German Center for Neurodegenerative Diseases"
+    - "German Center of Neurodegenerative Diseases"
+    - "German Centre for Neurodegenerative Diseases"
+    - "German Centre of Neurodegenerative Diseases"
+    - "Deutsches Zentrum für Neurodegenerative Erkrankungen"
+    - "DZNE"
+
+DZPG:
+  general:
+    - "German Center for Mental Health"
+    - "German Center of Mental Health"
+    - "German Centre for Mental Health"
+    - "German Centre of Mental Health"
+    - "Deutsches Zentrum für Psychische Gesundheit"
+    - "DZPG"
+
+DZKJ:
+  general:
+    - "German Center for Child and Adolescent Health"
+    - "German Center of Child and Adolescent Health"
+    - "German Centre for Child and Adolescent Health"
+    - "German Centre of Child and Adolescent Health"
+    - "Deutsches Zentrum für Kinder- und Jugendgesundheit"
+    - "DZKJ"
+
+DZHK:
+  general:
+    - "German Center for Cardiovascular Research"
+    - "German Center of Cardiovascular Research"
+    - "German Centre for Cardiovascular Research"
+    - "German Centre of Cardiovascular Research"
+    - "Deutsches Zentrum für Herz-Kreislauf-Forschung"
+    - "DZHK"
+
+DKTK:
+  general:
+    - "German Cancer Consortium"
+    - "Deutsches Konsortium für Translationale Krebsforschung"
+    - "DKTK"
+
+DZL:
+  general:
+    - "German Center for Lung Research"
+    - "German Center of Lung Research"
+    - "German Centre for Lung Research"
+    - "German Centre of Lung Research"
+    - "Deutsches Zentrum für Lungenforschung"
+    - "DZL"
+  ARCN:
+    - "Airway Research Center North"
+    - "Airway Research Centre North"
+    - "ARCN"
+  BREATH:
+    - "Biomedical Research in Endstage and Obstructive Lung Disease Hannover"
+    - "BREATH"
+  UGMLC:
+    - "Universities of Giessen and Marburg Lung Center"
+    - "Universities of Giessen and Marburg Lung Centre"
+    - "Justus-Liebig-University Giessen and Marburg Lung Center"
+    - "Justus-Liebig-University Giessen and Marburg Lung Centre"
+    - "University of Giessen, Marburg Lung Center"
+    - "University of Giessen, Marburg Lung Centre"
+    - "Lungenzentrum der Universität Gießen und Marburg"
+    - "UGMLC"
+  TLRC:
+    - "Translational Lung Research Center"
+    - "Translational Lung Research Centre"
+    - "TLRC"
+  CPC-M:
+    - "Comprehensive Pneumology Center"
+    - "Comprehensive Pneumology Centre"
+    - "CPC-M"
+
+DZD:
+  general:
+    - "German Center for Diabetes Research"
+    - "German Center of Diabetes Research"
+    - "German Centre for Diabetes Research"
+    - "German Centre of Diabetes Research"
+    - "Deutsches Zentrum für Diabetesforschung"
+    - "DZD"
