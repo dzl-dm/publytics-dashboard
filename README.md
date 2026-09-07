@@ -20,14 +20,14 @@ The pipeline covers one DZG at a time. Which one is set in a YAML config.
 Python 3.10 or higher is required.
 
 ```bash
-pip install biopython pandas pyyaml requests aiohttp streamlit plotly matplotlib numpy venn
+pip install -r requirements.txt
 
-python code/01_load.py
-python code/02_preprocessing.py
-streamlit run code/03_dashboard.py
+python 01_load.py
+python 02_preprocessing.py
+streamlit run 03_dashboard.py
 ```
 
-Set your own email address in `code/01_load.py` before the first run. NCBI requires it for API access. No registration or key is needed.
+Set your own email address in `01_load.py` before the first run. NCBI requires it for API access. No registration or key is needed.
 
 ## How It Works
 
@@ -38,18 +38,19 @@ The pipeline consists of three scripts, run in order.
 |---|---|
 | `01_load.py` | Queries PubMed by affiliation and writes raw article and author tables |
 | `02_preprocessing.py` | Adds DZG affiliation flags, citation counts from NIH iCite, journal prestige from SCImago, and a MeSH term table |
-| `03_dashboard.py` | Renders the dashboard with five tabs covering publications, citations, journal metrics, collaboration and MeSH topics |
+| `03_dashboard.py` | Renders the dashboard with six tabs covering publications, citations, journal metrics, collaboration, MeSH topics and the raw tables |
 
-Paths resolve relative to the script location, so the project runs from any folder. The `data` folder is created automatically on first run.
+Paths resolve relative to the script location, so the project runs from any folder. The `data` folder is created next to the scripts on first run and holds everything the pipeline writes.
 
 ```
-project/
-├── code/
-│   ├── 01_load.py
-│   ├── 02_preprocessing.py
-│   ├── 03_dashboard.py
-│   ├── dzg_search_terms.yaml
-│   └── mesh_stoplist.yaml
+dzg-publication-dashboard/
+├── 01_load.py
+├── 02_preprocessing.py
+├── 03_dashboard.py
+├── dzg_search_terms.yaml
+├── mesh_stoplist.yaml
+├── requirements.txt
+├── README.md
 └── data/
     ├── pubmed_articles.csv
     ├── pubmed_authors.csv
@@ -58,8 +59,10 @@ project/
     ├── pubmed_mesh.csv
     ├── metadata_extraction.csv
     ├── metadata_processing.csv
-    └── sjr_cache/
+    └── sjr_data/
 ```
+
+Progress and warnings are written through the logging module, so every run reports its steps with a timestamp in the terminal.
 
 ## Configuration
 
@@ -149,7 +152,7 @@ Both pipeline steps append one row per run. `metadata_extraction.csv` records ar
 
 **Citation counts are a snapshot.** iCite updates regularly, so figures are accurate at query time and drift afterwards.
 
-**SCImago can block automated requests.** The script sends a browser like `User-Agent` header. Should this stop working, the yearly rankings can be downloaded manually from SCImago and placed in `data/sjr_cache/` as `sjr_<year>.csv`, which the script reads instead of the network.
+**SCImago can block automated requests.** The script sends a browser like `User-Agent` header. Should this stop working, the yearly rankings can be downloaded manually from SCImago and placed in `data/sjr_data/` as `sjr_<year>.csv`, which the script reads instead of the network.
 
 ## Further Resources
 
