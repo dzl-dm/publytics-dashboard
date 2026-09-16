@@ -10,6 +10,7 @@ The pipeline covers one DZG at a time. Which one is set in a YAML config.
 |---|---|
 | [Quick Start](#quick-start) | Installation and the three commands to run |
 | [How It Works](#how-it-works) | Pipeline overview and folder structure |
+| [Using the Dashboard](#using-the-dashboard) | Filters and the raw data tab |
 | [Configuration](#configuration) | Search terms, colours, stoplist and script settings |
 | [Output Files](#output-files) | Column reference for every generated file |
 | [Known Limitations](#known-limitations) | What the data cannot tell you |
@@ -38,6 +39,7 @@ The pipeline consists of three scripts, run in order.
 |---|---|
 | `01_load.py` | Queries PubMed by affiliation and writes raw article and author tables |
 | `02_preprocessing.py` | Adds DZG affiliation flags, citation counts from NIH iCite, journal prestige from SCImago, and a MeSH term table |
+| `search_terms.py` | Interprets the search term grammar, shared by extraction and preprocessing |
 | `03_dashboard.py` | Renders the dashboard with six tabs covering publications, citations, journal metrics, collaboration, MeSH topics and the raw tables |
 
 Paths resolve relative to the script location, so the project runs from any folder. The `data` folder is created next to the scripts on first run and holds everything the pipeline writes.
@@ -47,10 +49,12 @@ dzg-publication-dashboard/
 ├── 01_load.py
 ├── 02_preprocessing.py
 ├── 03_dashboard.py
+├── search_terms.py
 ├── dzg_search_terms.yaml
 ├── mesh_stoplist.yaml
 ├── requirements.txt
 ├── README.md
+├── .gitignore
 └── data/
     ├── pubmed_articles.csv
     ├── pubmed_authors.csv
@@ -63,6 +67,16 @@ dzg-publication-dashboard/
 ```
 
 Progress and warnings are written through the logging module, so every run reports its steps with a timestamp in the terminal.
+
+Python creates a `__pycache__` folder next to the scripts as soon as one of them imports `search_terms`. It holds compiled bytecode, is rebuilt whenever it is missing, and is excluded in `.gitignore` together with the `data` folder, whose contents the pipeline can regenerate at any time.
+
+## Using the Dashboard
+
+The sidebar carries a site filter and a time range. `All` covers every publication of the center, `No Sites` narrows to the publications that carry the DZG affiliation without naming one of its sites, and each remaining entry filters to a single site.
+
+All charts follow the sidebar, so a change to the site or the time range applies everywhere at once.
+
+The `Raw Data` tab exposes the processed tables behind the charts, which makes any figure traceable to the publications it came from. It follows the sidebar filters by default and adds column filters on top, where the widget matches the content of the column. Columns with few distinct values offer a multiselect, numeric columns a range slider, and free text a search box. Clicking a column header sorts the table, DOI and PubMed links open in a new tab, and the current selection is available as a CSV download.
 
 ## Configuration
 
@@ -81,6 +95,18 @@ DZL:
     - "Translational Lung Research Center"
     - "TLRC"
 ```
+
+A term normally has to appear as written, anywhere in the affiliation and ignoring case. Two markers at the start of a term change that.
+
+| Marker | Effect |
+|---|---|
+| `{noorder}` | Every word after the marker has to appear somewhere in the affiliation, in any order |
+| `{nosearch}` | The term is not sent to PubMed and only assigns the site, never the DZG itself |
+
+
+`{nosearch}` exists for wording that is far too general and would return a large number of unrelated articles. It fills the site column only. 
+
+The markers can be combined.
 
 ### Colours
 
@@ -116,7 +142,7 @@ colors:
 
 ### Article Tables
 
-One row per article, keyed by `pmid`. The raw file carries the PubMed fields such as `doi`, `issn`, `journal_title`, `article_title`, `publication_year`, `mesh_descriptor` and `n_authors`. Preprocessing adds the following.
+One row per article, keyed by `pmid`. The raw file carries the PubMed fields such as `doi`, `issn`, `journal_title`, `article_title`, `article_date`, `publication_year`, `mesh_descriptor` and `n_authors`. `publication_year` prefers the electronic publication date and falls back to the journal issue, so it is filled even where `article_date` is empty. Preprocessing adds the following.
 
 | Column | Content |
 |---|---|
@@ -128,11 +154,11 @@ One row per article, keyed by `pmid`. The raw file carries the PubMed fields suc
 | `sjr` | SCImago Journal Rank of the publishing journal, matched by ISSN |
 | `sjr_quartile` | Journal quartile from Q1 to Q4 |
 
-Although only one DZG is extracted, preprocessing evaluates all DZG columns. This is what lets the dashboard show how often the active center publishes together with the other centers.
+Although only one DZG is extracted, preprocessing evaluates all DZG columns to show how often the active center publishes together with the other centers.
 
 ### Author Tables
 
-One row per author, referencing `pmid` and ordered by `author_position`. Beyond the name and affiliation fields, preprocessing adds the DZG affiliation columns plus `is_first_author` and `is_last_author`. Affiliation always refers to the specific article, so an author moving between centers does not distort earlier publications.
+One row per author, referencing `pmid` and ordered by `author_position`. The raw file carries `last_name`, `fore_name`, `initials`, `collective_name`, the author and affiliation identifiers, and `affiliation`. Preprocessing adds the DZG affiliation columns plus `is_first_author` and `is_last_author`. Affiliation always refers to the specific article, so an author moving between centers does not distort earlier publications.
 
 ### MeSH Table
 
@@ -144,7 +170,7 @@ Both pipeline steps append one row per run. `metadata_extraction.csv` records ar
 
 ## Known Limitations
 
-**Affiliations are free text.** PubMed stores the affiliation as the publisher submitted it, without a controlled vocabulary. The same institute therefore appears under many spellings, translations and abbreviations, and typographical errors are passed through unchanged. Matching relies on a hand maintained term list, so some publications are missed. At the same time PubMed searches case insensitively, so a short term like `BREATH` also matches unrelated contexts. Preprocessing applies a word boundary and context check for that case, but full precision is not achievable.
+**Affiliations are free text.** PubMed stores the affiliation as the publisher submitted it, without a controlled vocabulary. The same institute therefore appears under many spellings, translations and abbreviations, and typographical errors are passed through unchanged. Matching relies on a hand maintained term list, so some publications are missed. At the same time PubMed searches case insensitively. Full precision is not achievable.
 
 **SJR data lags behind.** SCImago publishes its rankings with roughly a year of delay. Where no entry exists for the publication year, the nearest earlier year for the same ISSN is used, so a quartile may reflect an older ranking.
 

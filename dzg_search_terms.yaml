@@ -2,14 +2,23 @@
 # Structure: DZG -> Network/Location -> List of Search Terms
 # 'general' = parent search for the entire DZG
 #
+# A term is matched as written, anywhere in the affiliation and ignoring case.
+# Two markers at the start of a term change that:
+#
+#   {noorder}   every word after the marker has to appear somewhere in the affiliation,
+#               in any order.
+#
+#   {nosearch}  the term is not used for searching in PubMed and only assigns the site during
+#               preprocessing. Use it for wording that is too general to search on.
+#
+# The markers can be combined
+#
 # active_dzg: set to the DZG key you want to extract, prepare and display.
 # Only this DZG's data will be downloaded, processed and shown in the dashboard.
 
 active_dzg: DZL
 
 # Colours used across the dashboard.
-# dzg   : one colour per DZG, used for the co-affiliation chart.
-# sites : one colour per site, grouped by the DZG the site belongs to.
 # Any DZG or site left out here falls back to a built-in palette, assigned in
 # alphabetical order so the same name always keeps the same colour.
 colors:
@@ -96,7 +105,8 @@ DZL:
     - "ARCN"
   BREATH:
     - "Biomedical Research in Endstage and Obstructive Lung Disease Hannover"
-    - "BREATH"
+    - "{noorder} BREATH hannover"
+    - "{noorder} BREATH hanover"
   UGMLC:
     - "Universities of Giessen and Marburg Lung Center"
     - "Universities of Giessen and Marburg Lung Centre"

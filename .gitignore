@@ -1,0 +1,16 @@
+# Python bytecode cache, created automatically when a local module is imported
+__pycache__/
+*.pyc
+
+# Downloaded and generated data, reproducible by running the pipeline
+data/
+
+# Editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+.venv/
+venv/
