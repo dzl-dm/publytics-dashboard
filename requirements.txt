@@ -1,0 +1,23 @@
+# Install with:  pip install -r requirements.txt
+#
+# Minimum versions rather than exact pins, so the project stays installable
+# alongside other work. Newer releases are expected to work.
+
+# Shared by all three scripts
+pandas>=2.0
+PyYAML>=6.0
+
+# 01_load.py, PubMed access through the NCBI Entrez API
+biopython>=1.81
+
+# 02_preprocessing.py, citation and journal metric downloads
+requests>=2.31
+aiohttp>=3.9
+
+# 03_dashboard.py
+# streamlit 1.35 introduced the chart selection events used for the click to filter charts
+streamlit>=1.35
+plotly>=5.20
+matplotlib>=3.7
+numpy>=1.24
+venn>=0.1.3
