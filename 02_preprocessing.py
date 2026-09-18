@@ -149,11 +149,17 @@ async def icite_batch(session: aiohttp.ClientSession,
                     log.warning(f"iCite answered with status {response.status}, batch skipped")
                     return {}
 
-            except aiohttp.ClientError as error:
+            # A timeout is not a ClientError, without it here one slow request would
+            # abort the whole run instead of costing a single batch
+            except (aiohttp.ClientError, asyncio.TimeoutError) as error:
                 if attempt == RETRIES:
                     log.warning(f"iCite batch given up on after {RETRIES} attempts: {error}")
                 else:
                     await asyncio.sleep(2 ** attempt)
+
+    # Reached when every attempt ran into the rate limit. Without this line the batch
+    # would disappear silently and the missing citations would be hard to notice.
+    log.warning(f"iCite kept rate limiting a batch of {len(pmid_list)} PMIDs, giving up on it")
     return {}
 
 
@@ -195,6 +201,11 @@ def enrich_citations(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     df["rcr"]            = pmid_str.map({k: v.get("relative_citation_ratio") for k, v in lookup.items()})
 
     found = len(lookup.keys() & set(pmids))
+    share = found / max(1, len(pmids)) * 100
+    if share < 90:
+        log.warning(f"iCite only returned data for {share:.1f} percent of the PMIDs. "
+                    f"Citation figures are incomplete, consider running this step again.")
+
     stats = {
         "source":  "iCite",
         "queried": len(pmids),
