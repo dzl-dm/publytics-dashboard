@@ -364,12 +364,6 @@ def load_data():
     return df_articles, df_authors, df_mesh, last_prepared, last_extracted
 
 
-def h_index(s: pd.Series) -> int:
-    """Compute the h-index from a Series of citation counts."""
-    counts = sorted(s.dropna().astype(int).tolist(), reverse=True)
-    return sum(1 for i, c in enumerate(counts, 1) if c >= i)
-
-
 def filter_by_dzg(df: pd.DataFrame, dzg: str) -> pd.DataFrame:
     """Return only rows where the given DZG column is True; returns df unchanged if the column is missing."""
     if dzg not in df.columns:
@@ -421,6 +415,72 @@ def leadership_pmids(df_authors: pd.DataFrame, dzg: str) -> set:
         return set()
     leading = df_authors[dzg] & (df_authors["is_first_author"] | df_authors["is_last_author"])
     return set(df_authors.loc[leading, "pmid"])
+
+
+def authors_by_mesh(df_mesh: pd.DataFrame, df_authors: pd.DataFrame, df_articles: pd.DataFrame,
+                    terms: list[str], leading_only: bool) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Find the authors who published on every selected MeSH term, plus their publications.
+
+    The terms are combined per author, not per publication. Someone who covered one term in
+    one paper and another term in a second paper still counts.
+
+    Authors are grouped by the author_key column that preprocessing writes, which joins
+    last name and initials. Returns the author table, the publication table, and the pairs
+    of author and publication that connect the two, so the interface can narrow the
+    publications to one author.
+    """
+    empty = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+    if not terms or df_mesh.empty or df_authors.empty:
+        return empty
+
+    if "author_key" not in df_authors.columns:
+        log.warning("The author file has no author_key column")
+        return empty
+
+    authors = df_authors
+    if leading_only and {"is_first_author", "is_last_author"}.issubset(authors.columns):
+        authors = authors[authors["is_first_author"] | authors["is_last_author"]]
+    if authors.empty:
+        return empty
+
+    # One author has to appear under every single term, so the sets are intersected
+    qualified = None
+    for term in terms:
+        term_pmids = set(df_mesh.loc[df_mesh["mesh_term"] == term, "pmid"])
+        term_keys  = set(authors.loc[authors["pmid"].isin(term_pmids), "author_key"])
+        qualified  = term_keys if qualified is None else qualified & term_keys
+    if not qualified:
+        return empty
+
+    # Their publications are those carrying at least one of the terms
+    all_pmids = set(df_mesh.loc[df_mesh["mesh_term"].isin(terms), "pmid"])
+    hits = authors[authors["author_key"].isin(qualified) & authors["pmid"].isin(all_pmids)]
+
+    leading = pd.Series(False, index=hits.index)
+    if {"is_first_author", "is_last_author"}.issubset(hits.columns):
+        leading = hits["is_first_author"] | hits["is_last_author"]
+
+    years = df_articles.set_index("pmid")["publication_year"]
+    hits  = hits.assign(publication_year=hits["pmid"].map(years), leading=leading)
+
+    # Every series below shares the author_key index, so the columns line up on their own
+    grouped        = hits.groupby("author_key")
+    leading_counts = hits[hits["leading"]].groupby("author_key")["pmid"].nunique()
+
+    summary = pd.DataFrame({
+        "Author":                  grouped["last_name"].first() + ", " + grouped["initials"].first(),
+        "Publications":            grouped["pmid"].nunique(),
+        "As first or last author": leading_counts.reindex(grouped.size().index).fillna(0).astype(int),
+        "From":                    grouped["publication_year"].min(),
+        "To":                      grouped["publication_year"].max(),
+        "ORCID":                   grouped["author_identifier"].first(),
+    })
+    summary = (summary.sort_values("Publications", ascending=False)
+                      .reset_index()
+                      .rename(columns={"index": "author_key"}))
+
+    publications = df_articles[df_articles["pmid"].isin(hits["pmid"].unique())]
+    return summary, publications, hits[["author_key", "pmid"]]
 
 
 def fig_pubs_per_year(df: pd.DataFrame, df_authors: pd.DataFrame, dzg: str) -> go.Figure:
@@ -901,8 +961,9 @@ st.markdown(
 
 # key plus on_change makes the tab bar remember which tab is open across reruns,
 # so changing a filter in the sidebar does not throw the user back to the first tab
-tab_overview, tab_citations, tab_journal, tab_collaboration, tab_mesh, tab_data = st.tabs(
-    ["Overview", "Citations", "Journal Metrics", "Collaboration", "MeSH Terms", "Raw Data"],
+tab_overview, tab_citations, tab_journal, tab_collaboration, tab_mesh, tab_authors, tab_data = st.tabs(
+    ["Overview", "Citations", "Journal Metrics", "Collaboration", "MeSH Terms",
+     "Author Search", "Raw Data"],
     key="active_tab",
     on_change="rerun",
 )
@@ -942,16 +1003,12 @@ with tab_citations:
     if has_citations(df_filtered):
         total_citations = int(df_filtered["cited_by_count"].sum())
         avg_citations   = round(df_filtered["cited_by_count"].mean(), 1)
-        h               = h_index(df_filtered["cited_by_count"])
-        m_quotient      = round(h / n_years, 2)
     else:
-        total_citations = avg_citations = h = m_quotient = None
+        total_citations = avg_citations = None
 
-    c1, c2, c3, c4 = st.columns(4)
-    kpi(c1, "Citations",               format_number(total_citations))
+    c1, c2 = st.columns(2)
+    kpi(c1, "Cumulative Citations",             format_number(total_citations))
     kpi(c2, "Average Citations per Publication", format_number(avg_citations, 1))
-    kpi(c3, "h-Index",                 format_number(h), sub="h publications with at least h citations each")
-    kpi(c4, "m-Quotient",              format_number(m_quotient, 2), sub="h-Index divided by years in range")
 
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
     st.plotly_chart(fig_citations_per_year(df_filtered), width="stretch")
@@ -975,14 +1032,6 @@ with tab_citations:
 # Tab: Journal Metrics
 
 with tab_journal:
-    info_box("Definitions", f"""
-        <b style="color:{BLUE}">SJR</b> (SCImago Journal Rank) rates a journal's prestige.
-        It weights citations by the standing of the citing journal. Published per journal and year by SCImago/Scopus.<br>
-        <b style="color:{BLUE}">RCR</b> (Relative Citation Ratio) rates the impact of a single
-        publication. It compares its citation rate to the average for its specific field, where
-        1.0 equals the NIH field average. Published per publication by NIH iCite.
-    """)
-
     if has_sjr(df_filtered):
         avg_sjr    = round(df_filtered["sjr"].mean(), 2)
         median_sjr = round(df_filtered["sjr"].median(), 2)
@@ -1013,6 +1062,16 @@ with tab_journal:
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
     st.plotly_chart(fig_sjr_per_year(df_filtered), width="stretch")
+
+    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+    info_box("Definitions", f"""
+        <b style="color:{BLUE}">SJR</b> (SCImago Journal Rank) rates a journal's prestige.
+        It weights citations by the standing of the citing journal. Published per journal and year by SCImago/Scopus.<br>
+        <b style="color:{BLUE}">RCR</b> (Relative Citation Ratio) rates the impact of a single
+        publication. It compares its citation rate to the average for its specific field, where
+        1.0 equals the NIH field average. Published per publication by NIH iCite.
+    """)
+
 
 # Tab: Collaboration
 
@@ -1101,6 +1160,104 @@ with tab_mesh:
         )
         st.plotly_chart(fig_mesh_trend(df_mesh_filtered, selected_terms), width="stretch")
         data_note("Only publications with MeSH descriptors assigned by PubMed are included.")
+
+
+# Tab: Author Search
+
+with tab_authors:
+    info_box("Finding Colleagues by Topic", """
+        Lists the DZG affiliated authors who have published on the selected MeSH terms.
+        Terms are combined per author rather than per publication, so someone who covered
+        one term in one paper and another term in a second paper still appears.
+    """)
+
+    if mesh_counts_full.empty:
+        st.info("No MeSH data available, re-run 02_preprocessing.py to generate pubmed_mesh.csv.")
+    else:
+        hide_generic = st.checkbox(
+            "Hide non-specific terms in the list below", value=True, key="author_search_stoplist"
+        )
+        offered = (mesh_counts_full[~mesh_counts_full.index.isin(mesh_stoplist)]
+                   if hide_generic else mesh_counts_full)
+
+        chosen_terms = st.multiselect(
+            "MeSH terms, combined with AND",
+            options=offered.index.tolist(),
+            help="An author has to have published on every selected term, not necessarily "
+                 "within the same publication.",
+            key="author_search_terms",
+        )
+        leading_only = st.checkbox(
+            "Only first or last author",
+            value=False,
+            key="author_search_leading",
+        )
+
+        if not chosen_terms:
+            st.info("Select at least one MeSH term to search for.")
+        else:
+            found_authors, found_publications, author_links = authors_by_mesh(
+                df_mesh_filtered, df_authors_filtered_dzg, df_filtered, chosen_terms, leading_only
+            )
+
+            if found_authors.empty:
+                st.info("No author of the centre has published on all of the selected terms "
+                        "within the current selection.")
+            else:
+                st.markdown('<div class="section-label">Authors</div>', unsafe_allow_html=True)
+                st.caption(f"{format_number(len(found_authors))} authors, "
+                           f"{format_number(len(found_publications))} publications. "
+                           "Select a row to narrow the publications below to that author.")
+
+                # The key carries the chosen terms, so a new search starts without an old
+                # row still being selected
+                selection = st.dataframe(
+                    found_authors,
+                    width="stretch",
+                    hide_index=True,
+                    on_select="rerun",
+                    selection_mode="single-row",
+                    key=f"author_table_{'_'.join(sorted(chosen_terms))}_{leading_only}",
+                    column_order=[c for c in found_authors.columns if c != "author_key"],
+                    column_config={
+                        "Publications":            st.column_config.NumberColumn(format="%d"),
+                        "As first or last author": st.column_config.NumberColumn(format="%d"),
+                        "From":                    st.column_config.NumberColumn(format="%d"),
+                        "To":                      st.column_config.NumberColumn(format="%d"),
+                    },
+                )
+                data_note("Authors are identified by last name and initials, because PubMed "
+                          "carries no reliable author identifier. Namesakes therefore share a "
+                          "row, and one person can appear twice when a publisher abbreviates "
+                          "the name differently. The ORCID helps to tell the cases apart.")
+
+                chosen_rows = selection.selection.rows if selection else []
+                if chosen_rows:
+                    picked      = found_authors.iloc[chosen_rows[0]]
+                    picked_ids  = author_links.loc[author_links["author_key"] == picked["author_key"], "pmid"]
+                    shown       = found_publications[found_publications["pmid"].isin(picked_ids)]
+                    heading     = f"Publications of {picked['Author']}"
+                else:
+                    shown   = found_publications
+                    heading = "Their Publications"
+
+                st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+                st.markdown(f'<div class="section-label">{heading}</div>', unsafe_allow_html=True)
+                columns = [c for c in ["pmid", "article_title", "publication_year",
+                                       "cited_by_count", "pubmed_url"]
+                           if c in shown.columns]
+                table = shown[columns].sort_values("publication_year", ascending=False)
+                st.caption(f"{format_number(len(table))} publications")
+                st.dataframe(
+                    table, width="stretch", hide_index=True,
+                    column_config=table_column_config(table),
+                )
+                st.download_button(
+                    "Download the authors as CSV",
+                    data=found_authors.drop(columns=["author_key"]).to_csv(index=False, sep=";").encode("utf-8-sig"),
+                    file_name=f"{selected_dzg.lower()}_authors_by_topic.csv",
+                    mime="text/csv",
+                )
 
 
 # Tab: Raw Data

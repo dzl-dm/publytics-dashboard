@@ -105,6 +105,20 @@ def mark_first_last_author(df_authors: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def add_author_key(df_authors: pd.DataFrame) -> pd.DataFrame:
+    """Add a column that identifies an author by last name and initials.
+
+    PubMed carries no reliable author identifier, so the name is the only handle. Two
+    people with the same name therefore share a key, and one person gets two keys when a
+    publisher abbreviates the name differently. Writing the key into the file makes the
+    grouping visible and lets it be checked against the rows it came from.
+    """
+    df = df_authors.copy()
+    df["author_key"] = (df["last_name"].fillna("").str.strip().str.casefold() + "|"
+                        + df["initials"].fillna("").str.strip().str.casefold())
+    return df
+
+
 def count_dzg_authors(df_authors: pd.DataFrame, dzg_columns: list) -> pd.DataFrame:
     """Count how many authors per article are affiliated with any DZG."""
     is_dzg_author = df_authors[dzg_columns].any(axis=1)
@@ -399,6 +413,8 @@ if __name__ == "__main__":
 
     log.info("Step 4: Marking first and last authors")
     df_authors = mark_first_last_author(df_authors)
+    df_authors = add_author_key(df_authors)
+    log.info("%s distinct author keys", f"{df_authors['author_key'].nunique():,}")
 
     log.info("Step 5: Citation data from iCite")
     df_articles, stats = enrich_citations(df_articles)
