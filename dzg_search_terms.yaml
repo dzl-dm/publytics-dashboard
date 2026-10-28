@@ -106,6 +106,56 @@ DKTK:
     - "German Cancer Consortium"
     - "Deutsches Konsortium für Translationale Krebsforschung"
     - "DKTK"
+  HEIDELBERG:
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Heidelberg)\b'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:German Cancer Research Cent(?:er|re)|Deutsches Krebsforschungszentrum|(?-i:\bDKFZ\b))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:National Cent(?:er|re) for Tumou?r Diseases|Nationales Centrum f(?:ü|ue|u)r Tumorerkrankungen|(?-i:\bNCT\b))[^;\n]{0,15}?Heidelberg)'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Paul[- ]Ehrlich[- ]Institut(?:e)?)'
+    - '{regex}[\s,;:/]+(?:German Cancer Research Cent(?:er|re)|Deutsches Krebsforschungszentrum|(?-i:\bDKFZ\b))'
+    - '{regex}[\s,;:/]+(?:Core[- ]?Cent(?:er|re)|Kern[- ]?zentrum)[\s,;:/]+Heidelberg\b'
+    - '{regex}[\s,;:/]+(?:(?:German Cancer Research Cent(?:er|re)|Deutsches Krebsforschungszentrum|(?-i:\bDKFZ\b))(?:\s*\((?-i:DKFZ)\))?[\s,;:/]+)?(?:Core[- ]?Cent(?:er|re)|Kern[- ]?zentrum)[\s,;:/]+Heidelberg\b'
+  BERLIN:
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Berlin)\b'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Charit(?:é|e)(?!\s+Comprehensive)(?:\W+Universit(?:ä|ae)tsmedizin Berlin)?)'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Charit(?:é|e) Comprehensive Cancer Cent(?:er|re)|(?-i:\bCCCC\b))'
+  DRESDEN:
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Dresden|Saxony|Sachsen)\b'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:Technische Universit(?:ä|ae)t|Technical University(?: of)?|(?-i:\bTU\b))\s*Dresden|Dresden University of Technology)'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:(?:University Hospital|Universit(?:ä|ae)tsklinikum) )?Carl[- ]Gustav[- ]Carus|(?:University Hospital|Universit(?:ä|ae)tsklinikum) Dresden)'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Helmholtz[- ]Zentrum Dresden\W*Rossendorf|(?-i:\bHZDR\b))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:(?:National Cent(?:er|re) for Tumou?r Diseases|Nationales Centrum f(?:ü|ue|u)r Tumorerkrankungen|(?-i:\bNCT\b))|University Cancer Cent(?:er|re)|Universit(?:ä|ae)ts ?KrebsCentrum|(?-i:\bUCC\b))[^;\n]{0,15}?Dresden)'
+  ESSEN-DUESSELDORF:
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Essen|D(?:ü|ue|u)sseldorf|North Rhine[- ]Westphalia|Nordrhein[- ]Westfalen|NRW)\b'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:University of|Universit(?:ä|ae)t) Duisburg[- ]Essen|(?-i:\bUDE\b))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:(?:University Hospital|Universit(?:ä|ae)tsklinikum)|Universit(?:ä|ae)tsmedizin) Essen)'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Heinrich[- ]Heine[- ]Universit(?:y|(?:ä|ae)t)|(?-i:\bHHU\b))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:University Hospital|Universit(?:ä|ae)tsklinikum) D(?:ü|ue|u)sseldorf|(?-i:\bUKD\b))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:West German Cancer Cent(?:er|re)|Westdeutsches Tumorzentrum|(?-i:\bWTZ\b))'
+  FRANKFURT-MAINZ:
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Frankfurt(?: am Main)?|Mainz|Hesse|Hessen|Rhineland[- ]Palatinate|Rheinland[- ]Pfalz)\b'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:Johann Wolfgang )?Goethe[- ]Universit(?:y|(?:ä|ae)t))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:(?:University Hospital|Universit(?:ä|ae)tsklinikum)|Universit(?:ä|ae)tsmedizin) Frankfurt)'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Georg[- ]Speyer[- ]Haus|(?-i:\bGSH\b))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:(?:Universit(?:ä|ae)tsmedizin|University Medical Cent(?:er|re))(?: of(?: the)?| der)? )?Johannes[- ]Gutenberg[- ]Universit(?:y|(?:ä|ae)t)|(?:Universit(?:ä|ae)tsmedizin|University Medical Cent(?:er|re)) Mainz|(?-i:\bJGU\b))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:University Cancer Cent(?:er|re)s?|Universit(?:ä|ae)res Centrum f(?:ü|ue|u)r Tumorerkrankungen|(?-i:\bUCT\b))[^;\n]{0,15}?(?:Frankfurt|Mainz))'
+  TUEBINGEN:
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:T(?:ü|ue|u)bingen)\b'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Eberhard[- ]Karls[- ]Universit(?:y|(?:ä|ae)t)|(?:University of|Universit(?:ä|ae)t) T(?:ü|ue|u)bingen)'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:University Hospital|Universit(?:ä|ae)tsklinikum) T(?:ü|ue|u)bingen|(?-i:\bUKT\b))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:Comprehensive Cancer Cent(?:er|re)|(?-i:\bCCC\b))[^;\n]{0,15}?T(?:ü|ue|u)bingen)'
+  FREIBURG:
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Freiburg(?: im Breisgau)?)\b'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Albert[- ]Ludwigs[- ]Universit(?:y|(?:ä|ae)t)|(?:University of|Universit(?:ä|ae)t) Freiburg)'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:(?:University Hospital|Universit(?:ä|ae)tsklinikum)|University Medical Cent(?:er|re)) Freiburg)'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Max[- ]Planck[- ]Institut(?:e)? (?:of|for|f(?:ü|ue|u)r) Immuno?biolog(?:y|ie)|(?-i:\bMPI-IE\b))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:Comprehensive Cancer Cent(?:er|re)|(?-i:\bCCC\b))[^;\n]{0,15}?Freiburg|(?-i:\bCCCF\b))'
+  MUENCHEN:
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:M(?:ü|ue|u)nchen|Munich|Bavaria|Bayern)\b'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Ludwig[- ]Maximilians[- ]Universit(?:y|(?:ä|ae)t)|(?-i:\bLMU\b)(?!\s+(?:Klinikum|University Hospital)))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:LMU[- ](?:Klinikum|University Hospital)|Klinikum der (?:Universit(?:ä|ae)t M(?:ü|ue|u)nchen|LMU))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:Technische Universit(?:ä|ae)t M(?:ü|ue|u)nchen|Technical University (?:of )?Munich|(?-i:\bTUM\b)(?!\s+(?:Klinikum|University Hospital)))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:Klinikum |Hospital )?rechts der Isar|TUM (?:Klinikum|University Hospital))'
+    - '{regex}[\s,;:/]+(?:Pa(?:r)?tner[- ]?si(?:te|de)|Partner side|Standort|sites?)[\s,;:/]+(?:(?:Comprehensive Cancer Cent(?:er|re)|(?-i:\bCCC\b))[^;\n]{0,15}?(?:M(?:ü|ue|u)nchen|Munich)|(?-i:\bCCCM\b))'
 
 DZL:
   general:
